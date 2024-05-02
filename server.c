@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
         usage(argc, argv);
     }
     // criando uma coordenada
-    Coordinate coordServ = {-19.9927, -43.9451};
+    //Coordinate coordServ = {-19.9927, -43.9451};
     struct sockaddr_storage storage;
     // recebe o tipo o porto e o storage para inicializar
     if (0 != server_sockaddr_init(argv[1], argv[2], &storage)) {
@@ -84,13 +84,15 @@ int main(int argc, char **argv) {
             scanf("%d" , &sResponse);
             switch (sResponse) {
             case 0: {
-                printf("Não foi encontrado um motorista\n");
+                
+                char *message = "Não foi encontrado um motorista";
+                send(csock, message, strlen(message), 0);
                 close(csock);
-                //exit(EXIT_SUCCESS);
+                
                 break;
             }
             case 1: {
-
+        
                 // verifica se a conexão foi bem sucedida ou não
                 if (csock == -1) {
                     logexit("accept");
