@@ -23,8 +23,9 @@ void usage(int argc, char **argv) {
 #define BUFSZ 1024
 
 int main(int argc, char **argv) {
-    // criando coordenada para Parque Guanabara
-    Coordinate coordCli = {-19.8595, -43.9784};
+    label:
+	// criando coordenada para Parque Guanabara
+    Coordinate coordCli = {-19.9742, -43.9440};
     // verificando se o programa foi utilizado de maneira correta
     if (argc < 3) {
         usage(argc, argv);
@@ -50,6 +51,7 @@ int main(int argc, char **argv) {
     // portanto já é feito o tratamento de erro
     // menu inicial
 	int clientResponse;
+	
     printf("0 - Sair\n");
     printf("1 - Buscar corrida\n");
     scanf("%d", &clientResponse);
@@ -91,13 +93,19 @@ int main(int argc, char **argv) {
         memset(buf, 0, BUFSZ);
         // total de bytes recebidos até o momento, utilizado para ir colocando o
         // dado à frente no buffer
-        unsigned total = 0;
+        //unsigned total = 0;
         // fica recebendo dados do servidor até terminar a conexão
         while (1) {
 
             // recebe a resposta do servidor no socket s, coloca o dado no buff,
             // o tanto de dado que vai receber no bufsz e flag
-            count = recv(s, buf + total, BUFSZ - total, 0);
+            count = recv(s, buf, BUFSZ, 0);
+			if(strcmp(buf, "Não foi encontrado um motorista") == 0){
+				 close(s);
+				memset(buf, 0, BUFSZ);
+				goto label;
+			}
+			
             // caso em que nada foi recebido
             if (count == 0) {
 
@@ -105,13 +113,16 @@ int main(int argc, char **argv) {
                 break;
             }
             // acrescenta o tanto de bytes recebido nessa variável
-            total += count;
-        }
+            //total += count;
+			puts(buf);
+        memset(buf, 0, BUFSZ);
+		}
+		
         // fecha o socket após terminar a conexão
         close(s);
         // imprime o tanto de bytes recebidos e a mensagem
         //printf("received %u bytes\n", total);
-        puts(buf);
+        
         exit(EXIT_SUCCESS);
     }
     default:

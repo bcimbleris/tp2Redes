@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #define BUFSZ 1024
 #define EARTH_RADIUS 6371.0 // Raio da Terra em quilômetros
+#define PI 3.14159265358979323846
 typedef struct {
     double latitude;
     double longitude;
@@ -24,9 +25,7 @@ void usage(int argc, char **argv) {
 }
 // Função para calcular a distância entre duas coordenadas usando a fórmula de
 // Haversine
-double deg2rad(double deg) {
-    return deg * (M_PI / 180.0);
-}
+double deg2rad(double deg) { return deg * (PI / 180.0); }
 double haversine_distance(double lat1, double lon1, double lat2, double lon2) {
     // Converte as coordenadas de graus para radianos
     lat1 = deg2rad(lat1);
@@ -131,29 +130,40 @@ int main(int argc, char **argv) {
                 memset(buf, 0, BUFSZ);
                 // recebe a mensagem
                 Coordinate coordCli;
-                size_t count = recv(csock, &coordCli, sizeof(Coordinate), 0);
+                recv(csock, &coordCli, sizeof(Coordinate), 0);
                 // printa a mensagem do cliente e o tamanho dela
-                printf("Coordenadas recebidas: Latitude = %f, Longitude = %f\n",
-                       coordCli.latitude, coordCli.longitude);
+                //printf("Coordenadas recebidas: Latitude = %f, Longitude = %f\n", coordCli.latitude, coordCli.longitude);
                 // Calcular a distância entre as coordenadas do cliente e do
                 // server
                 double distance =
                     haversine_distance(coordCli.latitude, coordCli.longitude,
                                        coordServ.latitude, coordServ.longitude);
-                printf("Distância entre cliente e serviço: %.2f km\n",
-                       distance);
+
                 // printf("[msg] %s, %d bytes: %s\n", caddrstr, (int)count,
                 // buf);
                 //  envia a resposta para o cliente em cima do buf. limita para
                 //  printar ate 1000 bytes e nao dar buffer overflow
                 // sprintf(buf, "remote endpoint: %.1000s\n", caddrstr);
                 //  envia no csock a mensagem
-                count = send(csock, buf, strlen(buf) + 1, 0);
-                // caso não tenha sido enviado o numero certo de dados fecha o
-                // programa
-                if (count != strlen(buf) + 1) {
-                    logexit("send");
+                while (distance > 0) {
+                    // printf("Distância entre cliente e motorista: %.2f km\n",
+                    // distance);
+                    char message[BUFSZ];
+                    sprintf(message, "Distância do motorista: %.2f km\n", distance);
+                   send(csock, message, strlen(message), 0);
+                    usleep(2000000); // Aguarda 2000ms (2 segundos)
+                    distance -= 0.4; // Reduz a distância em 400m a cada 2 segundos
                 }
+                
+                char *arrival_message = "O motorista chegou!";
+                send(csock, arrival_message, strlen(arrival_message), 0);
+                printf("O motorista chegou!\n");
+                // caso não tenha sido enviado o numero certo de dados fecha
+                // o programa
+
+                //if (count2 != strlen(buf) + 1) {
+                  //  logexit("send");
+                //}
                 // fecha a conexao
                 printf("Aguardando solicitação.\n");
                 close(csock);
