@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <math.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -24,7 +24,7 @@ void usage(int argc, char **argv) {
 
 int main(int argc, char **argv) {
     // criando coordenada para Parque Guanabara
-    //Coordinate coordCli = {-19.8595, -43.9784};
+    Coordinate coordCli = {-19.8595, -43.9784};
     // verificando se o programa foi utilizado de maneira correta
     if (argc < 3) {
         usage(argc, argv);
@@ -69,24 +69,22 @@ int main(int argc, char **argv) {
         // buffer
         addrtostr(addr, addrstr, BUFSZ);
 
-        //printf("connected to %s\n", addrstr);
-        
-		// comunicação do cliente com servidor
+        // comunicação do cliente com servidor
         char buf[BUFSZ];
         // inicializa o buffer com 0
         memset(buf, 0, BUFSZ);
-        printf("mensagem> ");
+        //printf("mensagem> ");
         // limpa o buffer do teclado para tirar o \n e funcionar outros comandos
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
+        //int c;
+        //while ((c = getchar()) != '\n' && c != EOF);
         // le do teclado o que a pessoa vai digitar e manda para o servidor
-        fgets(buf, BUFSZ - 1, stdin);
+        //fgets(buf, BUFSZ - 1, stdin);
         // socket, o dado que vai mandar, o número de bytes que vai mandar com
         // +1 para incluir o /0 e por fim o 0 é porque não precisamos utilizar
         // nenhuma função especial fala qual é o número de bytes que foram
         // efetivamente transmitidos na rede e termina a conexão caso tenha erro
-        size_t count = send(s, buf, strlen(buf) + 1, 0);
-        if (count != strlen(buf) + 1) {
+        size_t count = send(s, &coordCli, sizeof(Coordinate), 0);
+        if (count != sizeof(Coordinate)) {
             logexit("send");
         }
 
@@ -112,7 +110,7 @@ int main(int argc, char **argv) {
         // fecha o socket após terminar a conexão
         close(s);
         // imprime o tanto de bytes recebidos e a mensagem
-        printf("received %u bytes\n", total);
+        //printf("received %u bytes\n", total);
         puts(buf);
         exit(EXIT_SUCCESS);
     }
