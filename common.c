@@ -114,6 +114,7 @@ int server_sockaddr_init(const char *proto, const char *portstr,
         addr6->sin6_family = AF_INET6;
         // passa qualquer endereço que o computador tenha na interface de redes
         addr6->sin6_addr = in6addr_any;
+        //addr6->sin6_family = AF_INET6;
         addr6->sin6_port = port;
         return 0;
     } else {
