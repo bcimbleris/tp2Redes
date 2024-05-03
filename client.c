@@ -75,12 +75,7 @@ int main(int argc, char **argv) {
         char buf[BUFSZ];
         // inicializa o buffer com 0
         memset(buf, 0, BUFSZ);
-        //printf("mensagem> ");
-        // limpa o buffer do teclado para tirar o \n e funcionar outros comandos
-        //int c;
-        //while ((c = getchar()) != '\n' && c != EOF);
-        // le do teclado o que a pessoa vai digitar e manda para o servidor
-        //fgets(buf, BUFSZ - 1, stdin);
+        
         // socket, o dado que vai mandar, o número de bytes que vai mandar com
         // +1 para incluir o /0 e por fim o 0 é porque não precisamos utilizar
         // nenhuma função especial fala qual é o número de bytes que foram
