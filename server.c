@@ -19,8 +19,8 @@ typedef struct {
 // recebe o tipo de protocolo do servidor e o porto onde ele vai ficar esperando
 // e um exemplo
 void usage(int argc, char **argv) {
-    printf("usage: %s <v4|v6> <server port>\n", argv[0]);
-    printf("example: %s v4 51511\n", argv[0]);
+    printf("usage: %s <ipv4|ipv6> <server port>\n", argv[0]);
+    printf("example: %s ipv4 51511\n", argv[0]);
     exit(EXIT_FAILURE);
 }
 // Função para calcular a distância entre duas coordenadas usando a fórmula de
@@ -108,8 +108,8 @@ int main(int argc, char **argv) {
             switch (sResponse) {
             case 0: {
 
-                char *message = "Não foi encontrado um motorista";
-                send(csock, message, strlen(message), 0);
+                char *message1 = "Não foi encontrado um motorista";
+                send(csock, message1, strlen(message1), 0);
                 close(csock);
                 printf("Aguardando solicitação.\n");
                 break;
@@ -167,6 +167,7 @@ int main(int argc, char **argv) {
                 // fecha a conexao
                 printf("Aguardando solicitação.\n");
                 close(csock);
+                
             }
             default:
                 break;

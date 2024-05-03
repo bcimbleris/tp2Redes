@@ -15,8 +15,8 @@ typedef struct {
 } Coordinate;
 // Exemplo de como rodar o programa, aparece caso o programa seja usado errado
 void usage(int argc, char **argv) {
-    printf("usage: %s <server IP> <server port>\n", argv[0]);
-    printf("example: %s 127.0.0.1 51511\n", argv[0]);
+    printf("usage: %s <ipv4|ipv6> <server IP> <server port>\n", argv[0]);
+    printf("example: %s ipv4 127.0.0.1 51511\n", argv[0]);
     exit(EXIT_FAILURE);
 }
 
@@ -27,13 +27,13 @@ int main(int argc, char **argv) {
 	// criando coordenada para Parque Guanabara
     Coordinate coordCli = {-19.9742, -43.9440};
     // verificando se o programa foi utilizado de maneira correta
-    if (argc < 3) {
+    if (argc < 4) {
         usage(argc, argv);
     }
     struct sockaddr_storage storage;
     // retorna 0 quando funciona,recebe endereço do servidor, porto e
     // ponteiro para o sockaddr_storage que vai ser inicializado
-    if (0 != addrparse(argv[1], argv[2], &storage)) {
+    if (0 != addrparse(argv[1], argv[2], argv[3], &storage)) {
         usage(argc, argv);
     }
     // abre um socket de conexão TCP
@@ -96,7 +96,8 @@ int main(int argc, char **argv) {
             // o tanto de dado que vai receber no bufsz e flag
             count = recv(s, buf, BUFSZ, 0);
 			if(strcmp(buf, "Não foi encontrado um motorista") == 0){
-				 close(s);
+				puts(buf);
+                close(s);
 				memset(buf, 0, BUFSZ);
 				goto label;
 			}

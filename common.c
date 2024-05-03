@@ -10,9 +10,9 @@ void logexit(const char *msg) {
     exit(EXIT_FAILURE);
 }
 // se recebe endereço nulo  ou port nulo fecha o main
-int addrparse(const char *addrstr, const char *portstr,
+int addrparse(const char *iptype, const char *addrstr, const char *portstr,
               struct sockaddr_storage *storage) {
-    if (addrstr == NULL || portstr == NULL) {
+    if (iptype == NULL|| addrstr == NULL || portstr == NULL) {
         return -1;
     }
     // padrao do protocolo da internet é 16 bits. faz cast de string para
@@ -30,7 +30,7 @@ int addrparse(const char *addrstr, const char *portstr,
     // finaliza o programa
     struct in_addr inaddr4; // 32-bit IP address
     // tenta fazer o parser de IPv4 e se der certo coloca no inaddr4
-    if (inet_pton(AF_INET, addrstr, &inaddr4)) {
+    if (strcmp(iptype, "ipv4") == 0 && inet_pton(AF_INET, addrstr, &inaddr4)) {
         // converte a struct para um sockaddr_in, que é o sockadrr da internet
         struct sockaddr_in *addr4 = (struct sockaddr_in *)storage;
         addr4->sin_family = AF_INET;
@@ -42,7 +42,7 @@ int addrparse(const char *addrstr, const char *portstr,
     struct in6_addr inaddr6; // 128-bit IPv6 address
                              // tenta fazer o parser de IPv6 e se der certo
                              // coloca no inaddr6
-    if (inet_pton(AF_INET6, addrstr, &inaddr6)) {
+    if (strcmp(iptype, "ipv6") == 0 && inet_pton(AF_INET6, addrstr, &inaddr6)) {
         struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)storage;
         addr6->sin6_family = AF_INET6;
         addr6->sin6_port = port;
@@ -102,14 +102,14 @@ int server_sockaddr_init(const char *proto, const char *portstr,
 
     memset(storage, 0, sizeof(*storage));
     // checa qual protocolo o cliente mandou o servidor rodar
-    if (0 == strcmp(proto, "v4")) {
+    if (0 == strcmp(proto, "ipv4")) {
         struct sockaddr_in *addr4 = (struct sockaddr_in *)storage;
         addr4->sin_family = AF_INET;
         // passa qualquer endereço que o computador tenha na interface de redes
         addr4->sin_addr.s_addr = INADDR_ANY;
         addr4->sin_port = port;
         return 0;
-    } else if (0 == strcmp(proto, "v6")) {
+    } else if (0 == strcmp(proto, "ipv6")) {
         struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)storage;
         addr6->sin6_family = AF_INET6;
         // passa qualquer endereço que o computador tenha na interface de redes
