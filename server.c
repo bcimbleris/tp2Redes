@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
         usage(argc, argv);
     }
     // criando uma coordenada
-    Coordinate coordServ = {-19.9927, -43.9451};
+    Coordinate coordServ = {-19.9227, -43.9451};
 
     struct sockaddr_storage storage;
     // recebe o tipo o porto e o storage para inicializar
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
         // para passar para o accept da maneira correta
         socklen_t caddrlen = sizeof(cstorage);
         // retorna um novo socket para falar com o cliente e armazena o endereço
-        // do cliente em caddr
+        // do cliente
         int csock = accept(s, caddr, &caddrlen);
 
         if (0 == listen(s, 10)) {

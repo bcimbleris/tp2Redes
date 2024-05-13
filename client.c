@@ -24,8 +24,8 @@ void usage(int argc, char **argv) {
 
 int main(int argc, char **argv) {
 label:
-    // criando coordenada do cliente
-    Coordinate coordCli = {-19.9742, -43.9440};
+    // criando coordenada do cliente -19.92380718406128, -43.93492600471344
+    Coordinate coordCli = {-19.9238, -43.9349};
     // verificando se o programa foi utilizado de maneira correta
     if (argc < 4) {
         usage(argc, argv);
@@ -47,8 +47,6 @@ label:
     // uma interface que instancia um ponteiro e é feito o cast para o tipo
     // e coloca dentro da variável
     struct sockaddr *addr = (struct sockaddr *)(&storage);
-    // chamando a função connect, toda vez que ela deu certo retorna 0,
-    // portanto já é feito o tratamento de erro
     // menu inicial
     int clientResponse;
 
@@ -60,7 +58,8 @@ label:
         break;
     }
     case 1: {
-
+        // chamando a função connect, toda vez que ela deu certo retorna 0,
+        // portanto já é feito o tratamento de erro
         // passa o socket s, o endereço do servidor e o tamanho dessa estrutura
         if (0 != connect(s, addr, sizeof(storage))) {
             logexit("connect");
@@ -76,17 +75,14 @@ label:
         // inicializa o buffer com 0
         memset(buf, 0, BUFSZ);
 
-        // socket, o dado que vai mandar, o número de bytes que vai mandar com
-        // +1 para incluir o /0 e por fim o 0 é porque não precisamos utilizar
-        // nenhuma função especial fala qual é o número de bytes que foram
-        // efetivamente transmitidos na rede e termina a conexão caso tenha erro
+        // socket, o dado que vai mandar, o número de bytes que vai mandar e flag
         size_t count = send(s, &coordCli, sizeof(Coordinate), 0);
         if (count != sizeof(Coordinate)) {
             logexit("send");
         }
 
         memset(buf, 0, BUFSZ);
-    
+
         // fica recebendo dados do servidor até terminar a conexão
         while (1) {
 
@@ -107,7 +103,7 @@ label:
                 break;
             }
             puts(buf);
-            //reseta o buffer
+            // reseta o buffer
             memset(buf, 0, BUFSZ);
         }
 
