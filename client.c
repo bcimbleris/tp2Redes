@@ -1,13 +1,13 @@
 #include "common.h"
 
+#include <arpa/inet.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <math.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 typedef struct {
     double latitude;
@@ -23,8 +23,8 @@ void usage(int argc, char **argv) {
 #define BUFSZ 1024
 
 int main(int argc, char **argv) {
-    label:
-	// criando coordenada para Parque Guanabara
+label:
+    // criando coordenada do cliente
     Coordinate coordCli = {-19.9742, -43.9440};
     // verificando se o programa foi utilizado de maneira correta
     if (argc < 4) {
@@ -50,8 +50,8 @@ int main(int argc, char **argv) {
     // chamando a função connect, toda vez que ela deu certo retorna 0,
     // portanto já é feito o tratamento de erro
     // menu inicial
-	int clientResponse;
-	
+    int clientResponse;
+
     printf("0 - Sair\n");
     printf("1 - Buscar corrida\n");
     scanf("%d", &clientResponse);
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
         break;
     }
     case 1: {
-		
+
         // passa o socket s, o endereço do servidor e o tamanho dessa estrutura
         if (0 != connect(s, addr, sizeof(storage))) {
             logexit("connect");
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
         char buf[BUFSZ];
         // inicializa o buffer com 0
         memset(buf, 0, BUFSZ);
-        
+
         // socket, o dado que vai mandar, o número de bytes que vai mandar com
         // +1 para incluir o /0 e por fim o 0 é porque não precisamos utilizar
         // nenhuma função especial fala qual é o número de bytes que foram
@@ -86,39 +86,34 @@ int main(int argc, char **argv) {
         }
 
         memset(buf, 0, BUFSZ);
-        // total de bytes recebidos até o momento, utilizado para ir colocando o
-        // dado à frente no buffer
-        //unsigned total = 0;
+    
         // fica recebendo dados do servidor até terminar a conexão
         while (1) {
 
             // recebe a resposta do servidor no socket s, coloca o dado no buff,
             // o tanto de dado que vai receber no bufsz e flag
             count = recv(s, buf, BUFSZ, 0);
-			if(strcmp(buf, "Não foi encontrado um motorista") == 0){
-				puts(buf);
+            if (strcmp(buf, "Não foi encontrado um motorista") == 0) {
+                puts(buf);
                 close(s);
-				memset(buf, 0, BUFSZ);
-				goto label;
-			}
-			
+                memset(buf, 0, BUFSZ);
+                goto label;
+            }
+
             // caso em que nada foi recebido
             if (count == 0) {
 
                 // Connection terminated.
                 break;
             }
-            // acrescenta o tanto de bytes recebido nessa variável
-            //total += count;
-			puts(buf);
-        memset(buf, 0, BUFSZ);
-		}
-		
+            puts(buf);
+            //reseta o buffer
+            memset(buf, 0, BUFSZ);
+        }
+
         // fecha o socket após terminar a conexão
         close(s);
-        // imprime o tanto de bytes recebidos e a mensagem
-        //printf("received %u bytes\n", total);
-        
+
         exit(EXIT_SUCCESS);
     }
     default:

@@ -1,9 +1,9 @@
+#include <arpa/inet.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <arpa/inet.h>
 // quando dá erro imprime a mensagem e o código de erro
 void logexit(const char *msg) {
     perror(msg);
@@ -12,7 +12,7 @@ void logexit(const char *msg) {
 // se recebe endereço nulo  ou port nulo fecha o main
 int addrparse(const char *iptype, const char *addrstr, const char *portstr,
               struct sockaddr_storage *storage) {
-    if (iptype == NULL|| addrstr == NULL || portstr == NULL) {
+    if (iptype == NULL || addrstr == NULL || portstr == NULL) {
         return -1;
     }
     // padrao do protocolo da internet é 16 bits. faz cast de string para
@@ -46,7 +46,6 @@ int addrparse(const char *iptype, const char *addrstr, const char *portstr,
         struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)storage;
         addr6->sin6_family = AF_INET6;
         addr6->sin6_port = port;
-        // addr6->sin6_addr = inaddr6
         // para poder pegar 16 bytes e copiar para outro lugar precisa ser feito
         // dessa maneira em C
         memcpy(&(addr6->sin6_addr), &inaddr6, sizeof(inaddr6));
@@ -114,7 +113,6 @@ int server_sockaddr_init(const char *proto, const char *portstr,
         addr6->sin6_family = AF_INET6;
         // passa qualquer endereço que o computador tenha na interface de redes
         addr6->sin6_addr = in6addr_any;
-        //addr6->sin6_family = AF_INET6;
         addr6->sin6_port = port;
         return 0;
     } else {
