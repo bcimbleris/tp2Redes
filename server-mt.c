@@ -16,12 +16,12 @@ void usage(int argc, char **argv) {
     printf("example: %s v4 51511\n", argv[0]);
     exit(EXIT_FAILURE);
 }
-
+//os dados do cliente que serao passados para a thread no void pointer
 struct client_data {
     int csock;
     struct sockaddr_storage storage;
 };
-
+//dispara uma thread para novos clientes, a funcao e void pointer pela definicao de como a thread e utilizada
 void * client_thread(void *data) {
     struct client_data *cdata = (struct client_data *)data;
     struct sockaddr *caddr = (struct sockaddr *)(&cdata->storage);
@@ -41,7 +41,7 @@ void * client_thread(void *data) {
         logexit("send");
     }
     close(cdata->csock);
-
+    //fecha a thread
     pthread_exit(EXIT_SUCCESS);
 }
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
         if (csock == -1) {
             logexit("accept");
         }
-
+    //inicializando a struct e alocando espaço na memoria para a struct
 	struct client_data *cdata = malloc(sizeof(*cdata));
 	if (!cdata) {
 		logexit("malloc");
@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
 	memcpy(&(cdata->storage), &cstorage, sizeof(cstorage));
 
         pthread_t tid;
+        //instancia o tipo da thread. os parametros sao: tid é o identificador da thread, opcoes que nao serao utilizadas, a funcao utilizada e os dados a serem passados para a thread 
         pthread_create(&tid, NULL, client_thread, cdata);
     }
 

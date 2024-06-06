@@ -1,19 +1,20 @@
 # Variáveis
 CC = gcc
 CFLAGS = -Wall
+LDFLAGS =
 
 # Alvos
-all: bin/client bin/server
+all: bin/client bin/server-mt
 
 # Regras de compilação
-bin/client: common.o client.c | bin
-	$(CC) $(CFLAGS) client.c common.o -o $@ -lm
+bin/client: client.o common.o | bin
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-bin/server: common.o server.c | bin
-	$(CC) $(CFLAGS) server.c common.o -o $@ -lm
+bin/server-mt: server-mt.o common.o | bin
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) -pthread
 
-common.o: common.c
-	$(CC) $(CFLAGS) -c common.c
+%.o: %.c common.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Regra para criar a pasta bin/ se ainda não existir
 bin:
@@ -21,4 +22,4 @@ bin:
 
 # Regra de limpeza
 clean:
-	@rm -f common.o bin/client bin/server
+	@rm -f *.o bin/client bin/server-mt
