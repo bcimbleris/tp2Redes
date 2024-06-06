@@ -23,7 +23,7 @@ void usage(int argc, char **argv) {
 #define BUFSZ 1024
 
 int main(int argc, char **argv) {
-label:
+label: ;
     // criando coordenada do cliente -19.92380718406128, -43.93492600471344
     Coordinate coordCli = {-19.9238, -43.9349};
     // verificando se o programa foi utilizado de maneira correta

@@ -1,13 +1,24 @@
-all: client server
+# Variáveis
+CC = gcc
+CFLAGS = -Wall
 
-client: common.o client.c
-	gcc -Wall client.c common.o -o bin/client -lm
+# Alvos
+all: bin/client bin/server
 
-server: common.o server.c
-	gcc -Wall server.c common.o -o bin/server -lm
+# Regras de compilação
+bin/client: common.o client.c | bin
+	$(CC) $(CFLAGS) client.c common.o -o $@ -lm
+
+bin/server: common.o server.c | bin
+	$(CC) $(CFLAGS) server.c common.o -o $@ -lm
 
 common.o: common.c
-	gcc -Wall -c common.c
+	$(CC) $(CFLAGS) -c common.c
 
+# Regra para criar a pasta bin/ se ainda não existir
+bin:
+	@mkdir -p bin
+
+# Regra de limpeza
 clean:
-	rm -f common.o bin/client bin/server
+	@rm -f common.o bin/client bin/server
