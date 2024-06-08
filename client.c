@@ -38,7 +38,7 @@ label: ;
     }
     // abre um socket de conexão TCP
     int s;
-    s = socket(storage.ss_family, SOCK_STREAM, 0);
+    s = socket(storage.ss_family, SOCK_DGRAM, 0);
     // verificando se deu erro ao abrir o socket, toda vez que o socket dá
     // erro retorna -1
     if (s == -1) {
@@ -76,7 +76,7 @@ label: ;
         memset(buf, 0, BUFSZ);
 
         // socket, o dado que vai mandar, o número de bytes que vai mandar e flag
-        size_t count = send(s, &coordCli, sizeof(Coordinate), 0);
+        size_t count = sendto(s, &coordCli, sizeof(Coordinate), 0, addr, sizeof(struct sockaddr));
         if (count != sizeof(Coordinate)) {
             logexit("send");
         }
@@ -88,7 +88,7 @@ label: ;
 
             // recebe a resposta do servidor no socket s, coloca o dado no buff,
             // o tanto de dado que vai receber no bufsz e flag
-            count = recv(s, buf, BUFSZ, 0);
+            count = recvfrom(s, buf, BUFSZ, 0, addr ,sizeof(struct sockaddr));
             if (strcmp(buf, "Não foi encontrado um motorista") == 0) {
                 puts(buf);
                 close(s);
