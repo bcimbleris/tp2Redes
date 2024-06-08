@@ -17,45 +17,83 @@ void usage(int argc, char **argv) {
     exit(EXIT_FAILURE);
 }
 
-//os dados do cliente que serao passados para a thread no void pointer
-struct client_data {
-    int csock;
+typedef struct {
+    int socket;
+    int choice;
     struct sockaddr_storage storage;
+} ClientInfo;
+
+const char* lotr_quotes[] = {
+    "Even the smallest person can change the course of the future.",
+    "There is only one Lord of the Ring, only one who can bend it to his will. And he does not share power.",
+    "I wish the ring had never come to me.",
+    "There’s some good in this world, Mr. Frodo, and it’s worth fighting for.",
+    "Not all those who wander are lost."
 };
 
-//dispara uma thread para novos clientes, a funcao e void pointer pela definicao de como a thread e utilizada
-void *client_thread(void *data) {
-    struct client_data *cdata = (struct client_data *)data;
-    struct sockaddr *caddr = (struct sockaddr *)(&cdata->storage);
+const char* br2049_quotes[] = {
+    "I always told you, you're special.",
+    "A child. Of woman born. Pushed into the world. Wanted. Loved.",
+    "I hope you don't mind me taking the liberty.",
+    "You've never seen a miracle.",
+    "All the best memories are hers."
+};
 
-    char caddrstr[BUFSZ];
-    addrtostr(caddr, caddrstr, BUFSZ);
-    printf("[log] connection from %s\n", caddrstr);
+const char* madmax_quotes[] = {
+    "Oh what a day, what a lovely day!",
+    "Hope is a mistake.",
+    "We are not things.",
+    "My name is Max. My world is fire and blood.",
+    "I live, I die. I live again."
+};
 
-    char buf[BUFSZ];
-    memset(buf, 0, BUFSZ);
+pthread_mutex_t client_count_mutex = PTHREAD_MUTEX_INITIALIZER;
+int client_count = 0;
 
+void *monitor_clients(void *arg) {
     while (1) {
-        socklen_t caddrlen = sizeof(cdata->storage);
-        // Alteração nas funções de recebimento e envio para UDP
-        ssize_t count = recvfrom(cdata->csock, buf, BUFSZ - 1, 0, caddr, &caddrlen);
-        if (count == -1) {
-            perror("recvfrom");
-            break; // Se ocorrer um erro, saia do loop
-        }
+        sleep(4);
+        pthread_mutex_lock(&client_count_mutex);
+        printf("[log] Active clients: %d\n", client_count);
+        pthread_mutex_unlock(&client_count_mutex);
+    }
+    return NULL;
+}
 
-        printf("[msg] %s, %zd bytes: %s\n", caddrstr, count, buf);
-
-        count = sendto(cdata->csock, buf, strlen(buf), 0, caddr, caddrlen);
-        if (count == -1) {
-            perror("sendto");
-            break; // Se ocorrer um erro, saia do loop
+void send_quotes(int sock, const char* quotes[], struct sockaddr* caddr, socklen_t caddrlen) {
+    char send_buf[BUFSZ];
+    for (int i = 0; i < 5; i++) {
+        snprintf(send_buf, BUFSZ, "%s\n", quotes[i]);
+        size_t send_count = sendto(sock, send_buf, strlen(send_buf), 0, caddr, caddrlen);
+        if (send_count != strlen(send_buf)) {
+            logexit("sendto");
         }
+        sleep(3);
+    }
+}
+
+void *client_thread(void *data) {
+    ClientInfo *clientInfo = (ClientInfo *)data;
+    struct sockaddr *caddr = (struct sockaddr *)(&clientInfo->storage);
+    socklen_t caddrlen = sizeof(clientInfo->storage);
+
+    pthread_mutex_lock(&client_count_mutex);
+    client_count++;
+    pthread_mutex_unlock(&client_count_mutex);
+
+    if (clientInfo->choice == 1) {
+        send_quotes(clientInfo->socket, lotr_quotes, caddr, caddrlen);
+    } else if (clientInfo->choice == 2) {
+        send_quotes(clientInfo->socket, br2049_quotes, caddr, caddrlen);
+    } else if (clientInfo->choice == 3) {
+        send_quotes(clientInfo->socket, madmax_quotes, caddr, caddrlen);
     }
 
-    close(cdata->csock);
-    free(cdata); // Liberando a memória alocada para a struct client_data
-    //fecha a thread
+    pthread_mutex_lock(&client_count_mutex);
+    client_count--;
+    pthread_mutex_unlock(&client_count_mutex);
+
+    free(clientInfo);
     pthread_exit(EXIT_SUCCESS);
 }
 
@@ -69,53 +107,47 @@ int main(int argc, char **argv) {
         usage(argc, argv);
     }
 
-    int s;
-    s = socket(storage.ss_family, SOCK_DGRAM, 0);
+    int s = socket(storage.ss_family, SOCK_DGRAM, 0);
     if (s == -1) {
-        perror("socket");
-        exit(EXIT_FAILURE);
+        logexit("socket");
     }
 
     int enable = 1;
     if (0 != setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int))) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
+        logexit("setsockopt");
     }
 
     struct sockaddr *addr = (struct sockaddr *)(&storage);
     if (0 != bind(s, addr, sizeof(storage))) {
-        perror("bind");
-        exit(EXIT_FAILURE);
+        logexit("bind");
     }
 
     char addrstr[BUFSZ];
     addrtostr(addr, addrstr, BUFSZ);
-    printf("bound to %s, waiting connections\n", addrstr);
+    printf("bound to %s, waiting for messages\n", addrstr);
+
+    pthread_t monitor_tid;
+    pthread_create(&monitor_tid, NULL, monitor_clients, NULL);
+    pthread_detach(monitor_tid);
 
     while (1) {
-        struct sockaddr_storage cstorage;
-        struct sockaddr *caddr = (struct sockaddr *)(&cstorage);
-        socklen_t caddrlen = sizeof(cstorage);
-
-        int csock = accept(s, caddr, &caddrlen);
-        if (csock == -1) {
-            perror("accept");
-            continue; // Se ocorrer um erro, continue esperando por novas conexões
+        ClientInfo *clientInfo = malloc(sizeof(*clientInfo));
+        if (!clientInfo) {
+            logexit("malloc");
         }
 
-        //inicializando a struct e alocando espaço na memoria para a struct
-        struct client_data *cdata = malloc(sizeof(*cdata));
-        if (!cdata) {
-            perror("malloc");
-            continue; // Se ocorrer um erro, continue esperando por novas conexões
+        socklen_t caddrlen = sizeof(clientInfo->storage);
+        clientInfo->socket = s;
+        int recv_count = recvfrom(s, clientInfo, sizeof(*clientInfo), 0, (struct sockaddr *)(&clientInfo->storage), &caddrlen);
+        if (recv_count == -1) {
+            logexit("recvfrom");
         }
-        cdata->csock = csock;
-        memcpy(&(cdata->storage), &cstorage, sizeof(cstorage));
 
         pthread_t tid;
-        //instancia o tipo da thread. os parametros sao: tid é o identificador da thread, opcoes que nao serao utilizadas, a funcao utilizada e os dados a serem passados para a thread 
-        pthread_create(&tid, NULL, client_thread, cdata);
+        pthread_create(&tid, NULL, client_thread, clientInfo);
+        pthread_detach(tid);
     }
 
-    exit(EXIT_SUCCESS);
+    close(s);
+    return 0;
 }
