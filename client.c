@@ -1,13 +1,13 @@
 #include "common.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 typedef struct {
     int socket;
@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
 
         clientInfo.choice = clientResponse;
 
-        size_t count = sendto(s, &clientInfo, sizeof(clientInfo), 0, addr, sizeof(storage));
+        size_t count = sendto(s, &clientInfo, sizeof(clientInfo), 0, addr,
+                              sizeof(storage));
         if (count != sizeof(clientInfo)) {
             logexit("sendto");
         }
@@ -79,10 +80,9 @@ int main(int argc, char **argv) {
                 logexit("recvfrom");
             }
             buf[count] = '\0'; // Null-terminate the received data
-            printf("received: %s\n", buf);
+            printf("Frase %d: %s\n", i + 1, buf);
         }
     }
-
     close(s);
     return 0;
 }

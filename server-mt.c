@@ -23,29 +23,24 @@ typedef struct {
     struct sockaddr_storage storage;
 } ClientInfo;
 
-const char* lotr_quotes[] = {
+const char *lotr_quotes[] = {
     "Even the smallest person can change the course of the future.",
-    "There is only one Lord of the Ring, only one who can bend it to his will. And he does not share power.",
+    "There is only one Lord of the Ring, only one who can bend it to his will. "
+    "And he does not share power.",
     "I wish the ring had never come to me.",
     "There’s some good in this world, Mr. Frodo, and it’s worth fighting for.",
-    "Not all those who wander are lost."
-};
+    "Not all those who wander are lost."};
 
-const char* br2049_quotes[] = {
+const char *br2049_quotes[] = {
     "I always told you, you're special.",
     "A child. Of woman born. Pushed into the world. Wanted. Loved.",
     "I hope you don't mind me taking the liberty.",
-    "You've never seen a miracle.",
-    "All the best memories are hers."
-};
+    "You've never seen a miracle.", "All the best memories are hers."};
 
-const char* madmax_quotes[] = {
-    "Oh what a day, what a lovely day!",
-    "Hope is a mistake.",
-    "We are not things.",
-    "My name is Max. My world is fire and blood.",
-    "I live, I die. I live again."
-};
+const char *madmax_quotes[] = {"Oh what a day, what a lovely day!",
+                               "Hope is a mistake.", "We are not things.",
+                               "My name is Max. My world is fire and blood.",
+                               "I live, I die. I live again."};
 
 pthread_mutex_t client_count_mutex = PTHREAD_MUTEX_INITIALIZER;
 int client_count = 0;
@@ -54,17 +49,19 @@ void *monitor_clients(void *arg) {
     while (1) {
         sleep(4);
         pthread_mutex_lock(&client_count_mutex);
-        printf("[log] Active clients: %d\n", client_count);
+        printf("Clientes: %d\n", client_count);
         pthread_mutex_unlock(&client_count_mutex);
     }
     return NULL;
 }
 
-void send_quotes(int sock, const char* quotes[], struct sockaddr* caddr, socklen_t caddrlen) {
+void send_quotes(int sock, const char *quotes[], struct sockaddr *caddr,
+                 socklen_t caddrlen) {
     char send_buf[BUFSZ];
     for (int i = 0; i < 5; i++) {
         snprintf(send_buf, BUFSZ, "%s\n", quotes[i]);
-        size_t send_count = sendto(sock, send_buf, strlen(send_buf), 0, caddr, caddrlen);
+        size_t send_count =
+            sendto(sock, send_buf, strlen(send_buf), 0, caddr, caddrlen);
         if (send_count != strlen(send_buf)) {
             logexit("sendto");
         }
@@ -124,7 +121,6 @@ int main(int argc, char **argv) {
 
     char addrstr[BUFSZ];
     addrtostr(addr, addrstr, BUFSZ);
-    printf("bound to %s, waiting for messages\n", addrstr);
 
     pthread_t monitor_tid;
     pthread_create(&monitor_tid, NULL, monitor_clients, NULL);
@@ -138,7 +134,9 @@ int main(int argc, char **argv) {
 
         socklen_t caddrlen = sizeof(clientInfo->storage);
         clientInfo->socket = s;
-        int recv_count = recvfrom(s, clientInfo, sizeof(*clientInfo), 0, (struct sockaddr *)(&clientInfo->storage), &caddrlen);
+        int recv_count =
+            recvfrom(s, clientInfo, sizeof(*clientInfo), 0,
+                     (struct sockaddr *)(&clientInfo->storage), &caddrlen);
         if (recv_count == -1) {
             logexit("recvfrom");
         }
