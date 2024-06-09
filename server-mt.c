@@ -24,23 +24,23 @@ typedef struct {
 } ClientInfo;
 // abaixo foram inicializados arrays com as frases dos filmes escolhidos
 const char *lotr_quotes[] = {
-    "Even the smallest person can change the course of the future.",
-    "There is only one Lord of the Ring, only one who can bend it to his will. "
-    "And he does not share power.",
-    "I wish the ring had never come to me.",
-    "There’s some good in this world, Mr. Frodo, and it’s worth fighting for.",
-    "Not all those who wander are lost."};
+    "Um anel para a todos governar",
+    "Na terra de Mordor onde as sombras se deitam "
+    "Não é o que temos, mas o que fazemos com o que temos ",
+    "Não há mal que sempre dure", "O mundo está mudando, senhor Frodo"};
 
-const char *br2049_quotes[] = {
-    "I always told you, you're special.",
-    "A child. Of woman born. Pushed into the world. Wanted. Loved.",
-    "I hope you don't mind me taking the liberty.",
-    "You've never seen a miracle.", "All the best memories are hers."};
+const char *godfather_quotes[] = {
+    "Vou fazer uma oferta que ele não pode recusar",
+    "Mantenha seus amigos por perto e seus inimigos mais perto ainda",
+    "É melhor ser temido que amado", "A vingança é um prato que se come frio",
+    "Nunca deixe que ninguém saiba o que você está pensando"};
 
-const char *madmax_quotes[] = {"Oh what a day, what a lovely day!",
-                               "Hope is a mistake.", "We are not things.",
-                               "My name is Max. My world is fire and blood.",
-                               "I live, I die. I live again."};
+const char *fightclub_quotes[] = {
+    "Primeira regra do Clube da Luta: você não fala sobre o Clube da Luta ",
+    "Segunda regra do Clube da Luta : você não fala sobre o Clube da Luta",
+    " O que você possui acabará possuindo você ",
+    "É apenas depois de perder tudo que somos livres para fazer qualquer coisa",
+    " Escolha suas lutas com sabedoria "};
 
 // uma variavel mutex foi a melhor maneira encontrada atraves de pesquisa para
 // conseguir mostrar a quantidade de clientes ativos a cada 4 segundos.
@@ -88,13 +88,13 @@ void *client_thread(void *data) {
     // incrementa a contagem de clientes ativos
     client_count++;
     pthread_mutex_unlock(&client_count_mutex);
-    //chama a funcao send_quotes a partir da escolha feita pelo cliente
+    // chama a funcao send_quotes a partir da escolha feita pelo cliente
     if (clientInfo->choice == 1) {
         send_quotes(clientInfo->socket, lotr_quotes, caddr, caddrlen);
     } else if (clientInfo->choice == 2) {
-        send_quotes(clientInfo->socket, br2049_quotes, caddr, caddrlen);
+        send_quotes(clientInfo->socket, godfather_quotes, caddr, caddrlen);
     } else if (clientInfo->choice == 3) {
-        send_quotes(clientInfo->socket, madmax_quotes, caddr, caddrlen);
+        send_quotes(clientInfo->socket, fightclub_quotes, caddr, caddrlen);
     }
 
     pthread_mutex_lock(&client_count_mutex);

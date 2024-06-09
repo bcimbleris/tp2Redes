@@ -26,8 +26,8 @@ void usage(int argc, char **argv) {
 void menu() {
     printf("0 - Sair\n");
     printf("1 - Senhor dos Aneis\n");
-    printf("2 - Blade Runner 2049\n");
-    printf("3 - Mad Max: Fury Road\n");
+    printf("2 - O Poderoso Chefão\n");
+    printf("3 - Clube da Luta\n");
 }
 // verifica se foram passadas as quantidades certas de argumentos
 int main(int argc, char **argv) {
